@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Alert, FlatList } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Alert,
+  FlatList,
+  useWindowDimensions,
+} from "react-native";
 import Tittle from "../componenets/ui/Tittle";
 import NumberContainer from "../componenets/game/NumberContainer";
 import PrimaryButton from "../componenets/ui/PrimaryButton";
@@ -9,6 +15,7 @@ import GuessLogItems from "../componenets/game/GuessLogItems";
 
 import { Ionicons } from "@expo/vector-icons";
 
+// Function to generate a random number between min and max excluding the 'exclude' number
 function generateRandomBetween(min, max, exclude) {
   const rndNum = Math.floor(Math.random() * (max - min)) + min;
 
@@ -19,24 +26,35 @@ function generateRandomBetween(min, max, exclude) {
   }
 }
 
+// Initial boundaries for the guessing range
 let minBoundary = 1;
 let maxBoundary = 100;
 
+// GameScreen component
 const GameScreen = ({ userNumber, onGameOver }) => {
+  // Initial guess generated
   const initialGuess = generateRandomBetween(1, 100, userNumber);
+  // State to manage the current guess
   const [currentGuess, setCurrentGuess] = useState(initialGuess);
+  // State to store the guess rounds
   const [guessRound, setGuessRound] = useState([initialGuess]);
+
+  const { width, height } = useWindowDimensions();
+
+  // Effect to check if the game is over
   useEffect(() => {
     if (currentGuess === userNumber) {
       onGameOver(guessRound.length);
     }
   }, [currentGuess, userNumber, onGameOver]);
 
+  // Effect to reset the boundaries when component mounts
   useEffect(() => {
     minBoundary = 1;
     maxBoundary: 100;
   }, []);
 
+  // Function to handle the next guess
   const nextGuestHandler = (direction) => {
     if (
       (direction === "lower" && currentGuess < userNumber) ||
@@ -61,12 +79,11 @@ const GameScreen = ({ userNumber, onGameOver }) => {
     setGuessRound((prevGuessRounds) => [newRndNumber, ...prevGuessRounds]);
   };
 
+  // Length of the guess round list
   const guessRoundListLength = guessRound.length;
 
-  return (
-    <View style={styles.screen}>
-      <Tittle>Opponents's Guess</Tittle>
-
+  let content = (
+    <>
       <NumberContainer>{currentGuess}</NumberContainer>
       <Card>
         <InstructionText style={styles.instructionText}>
@@ -85,6 +102,33 @@ const GameScreen = ({ userNumber, onGameOver }) => {
           </View>
         </View>
       </Card>
+    </>
+  );
+
+  if (width > 400) {
+    content = (
+      <>
+        <View style={styles.buttonContainerWide}>
+          <View style={styles.buttonContainer}>
+            <PrimaryButton onPress={nextGuestHandler.bind(this, "lower")}>
+              <Ionicons name="remove" size={24} color="white" />
+            </PrimaryButton>
+          </View>
+          <NumberContainer>{currentGuess}</NumberContainer>
+          <View style={styles.buttonContainer}>
+            <PrimaryButton onPress={nextGuestHandler.bind(this, "greater")}>
+              <Ionicons name="add" size={24} color="white" />
+            </PrimaryButton>
+          </View>
+        </View>
+      </>
+    );
+  }
+
+  return (
+    <View style={styles.screen}>
+      <Tittle>Opponents's Guess</Tittle>
+      {content}
       <View style={styles.listContainer}>
         <FlatList
           data={guessRound}
@@ -106,7 +150,7 @@ export default GameScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-
+    alignItems: "center",
     padding: 12,
   },
   instructionText: {
@@ -121,5 +165,9 @@ const styles = StyleSheet.create({
   listContainer: {
     flex: 1,
     padding: 16,
+  },
+  buttonContainerWide: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });

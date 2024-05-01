@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { StyleSheet, View, TextInput, Alert } from "react-native";
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  Alert,
+  useWindowDimensions,
+  KeyboardAvoidingView,
+  ScrollView,
+} from "react-native";
 import PrimaryButton from "../componenets/ui/PrimaryButton";
 import Colors from "../constants/colors";
 import Tittle from "../componenets/ui/Tittle";
@@ -7,22 +15,29 @@ import Card from "../componenets/ui/Card";
 import InstructionText from "../componenets/ui/InstructionText";
 
 const StartGameScreen = ({ onPickNumber }) => {
+  // State to manage the entered number
   const [enteredNumber, setEnterNumber] = useState("");
 
-  resetInputHandler = () => {
-    setEnterNumber(" ");
+  // Get the window dimensions
+  const { width, height } = useWindowDimensions();
+
+  // Reset the input field
+  const resetInputHandler = () => {
+    setEnterNumber("");
   };
 
+  // Handle changes in the number input field
   const numberInputHandler = (enteredText) => {
     setEnterNumber(enteredText);
   };
 
+  // Handle confirmation of the entered number
   const confirmInputHandler = () => {
     const chosenNumber = parseInt(enteredNumber);
     if (isNaN(chosenNumber) || chosenNumber <= 0 || chosenNumber > 99) {
       Alert.alert(
         "Invalid number!",
-        "Number has to b a number between 1 and 99",
+        "Number has to be a number between 1 and 99",
         [
           {
             text: "Okay",
@@ -35,40 +50,51 @@ const StartGameScreen = ({ onPickNumber }) => {
     }
     onPickNumber(chosenNumber);
   };
+
+  // Calculate marginTop distance based on window height
+  const marginTopDistance = height < 400 ? 30 : 100;
+
   return (
-    <View style={styles.rootContainer}>
-      <Tittle>Guess My Number</Tittle>
-      <Card>
-        <InstructionText>Enter a Number</InstructionText>
-        <TextInput
-          style={styles.numberInput}
-          maxLength={2}
-          keyboardType="number-pad"
-          onChangeText={numberInputHandler}
-          value={enteredNumber}
-        />
-        <View style={styles.buttonsContainer}>
-          <View style={styles.buttonContainer}>
-            <PrimaryButton onPress={resetInputHandler}>Reset</PrimaryButton>
-          </View>
-          <View style={styles.buttonContainer}>
-            <PrimaryButton onPress={confirmInputHandler}>Confirm</PrimaryButton>
-          </View>
+    <ScrollView style={styles.screen}>
+      <KeyboardAvoidingView style={styles.screen} behavior="position">
+        <View style={[styles.rootContainer, { marginTop: marginTopDistance }]}>
+          <Tittle>Guess My Number</Tittle>
+          <Card>
+            <InstructionText>Enter a Number</InstructionText>
+            <TextInput
+              style={styles.numberInput}
+              maxLength={2}
+              keyboardType="number-pad"
+              onChangeText={numberInputHandler}
+              value={enteredNumber}
+            />
+            <View style={styles.buttonsContainer}>
+              <View style={styles.buttonContainer}>
+                <PrimaryButton onPress={resetInputHandler}>Reset</PrimaryButton>
+              </View>
+              <View style={styles.buttonContainer}>
+                <PrimaryButton onPress={confirmInputHandler}>
+                  Confirm
+                </PrimaryButton>
+              </View>
+            </View>
+          </Card>
         </View>
-      </Card>
-    </View>
+      </KeyboardAvoidingView>
+    </ScrollView>
   );
 };
 
 export default StartGameScreen;
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
   rootContainer: {
     flex: 1,
-    marginTop: 100,
     alignItems: "center",
   },
-
   numberInput: {
     height: 50,
     width: 50,
